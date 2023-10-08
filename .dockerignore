@@ -1,0 +1,4 @@
+*.md
+e2e/
+.github/
+*_test.go

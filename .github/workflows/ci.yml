@@ -1,0 +1,44 @@
+name: CI Docker
+on:
+  push:
+    branches:
+      - ethermeta/main
+    tags:
+      - v*.**
+      - customize-v*.**
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  ci:
+    name: Build Docker Image
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Docker login
+        run: |
+          docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push to GitHub Packages
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          platforms: linux/amd64, linux/arm64
+          push: true
+          build-args: |
+            ENCRYPTION=${{ matrix.encryption }}
+          tags: |
+            ghcr.io/ethermeta-org/coraza-caddy:v2.7.3
